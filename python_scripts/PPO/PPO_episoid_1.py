@@ -113,8 +113,8 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
     # 初始化日志写入器
     log_writer_catch = Log_write()  # 创建抓取日志写入器
     log_writer_tai = Log_write()  # 创建抬腿日志写入器
-    CHECKPOINT_INTERVAL = 500  
-    NUM_TEST_EPISODES = 100  
+    CHECKPOINT_INTERVAL = 100  # 从500减少到100，更频繁的评估
+    NUM_TEST_EPISODES = 20     # 从100减少到20，加快测试速度  
     MAX_TEST_ATTEMPTS = 5 
     tai_episoid = 1
     import os
@@ -329,6 +329,10 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
         obs = (obs_tensor, ppo_state)
         print("____________________")  # 打印初始状态
         prev_distance = None
+        prev_action_shoulder = 0.0
+        prev_action_arm = 0.0
+        return_all = 0
+        steps = 0
         # 单回合最多 19 步（也可以通过函数参数 max_steps_per_episode 控制，默认 19）
         max_steps_per_episode = min(max_steps_per_episode, 19)
                   
@@ -375,9 +379,9 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
             current_distance = (dy ** 2 + dz ** 2) ** 0.5
             #current_distance = dy
             if prev_distance is not None:
-                reward = (prev_distance - current_distance) * 2.0  # 降低距离奖励系数从10.0到2.0
+                reward = (prev_distance - current_distance) * 5.0  # 增加距离奖励系数到5.0，提供更强的接近激励
             else:
-                reward = -current_distance * 0.5  # 初始距离惩罚适度降低
+                reward = -current_distance * 1.0  # 初始距离惩罚
             prev_distance = current_distance
 
             # 抓取检测（放宽条件：单手成功即可）
@@ -398,9 +402,9 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
                 print(f"current_distance: {current_distance}")
                 if current_distance <= 0.15:  # 放宽距离要求从0.1到0.15
                     print("√抓到了目标阶梯")
-                    reward += 15.0  # 降低成功奖励从50.0到15.0
+                    reward += 50.0  # 增加成功奖励到50.0，提供更强的学习信号
                 else:
-                    reward += 5.0  # 接触但距离远的给正奖励而不是惩罚
+                    reward += 15.0  # 接触但距离远的给中等奖励
 
             # 温和的失败惩罚，避免过度惩罚
             if done == 1 and success_flag1 != 1:
@@ -413,6 +417,13 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
                 episode_invalid = True
                 episode_buffer_shoulder = []
                 episode_buffer_arm = []
+
+            # 探索奖励：鼓励动作多样性，防止策略塌缩
+            if steps > 0:
+                action_variation = abs(action_shoulder_scalar - prev_action_shoulder) + abs(action_arm_scalar - prev_action_arm)
+                reward += action_variation * 0.1  # 动作变化奖励
+            prev_action_shoulder = action_shoulder_scalar
+            prev_action_arm = action_arm_scalar
 
             # 时间惩罚 & 累计 reward
             reward -= steps * 0.05
@@ -458,9 +469,9 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
                 if episode_invalid:
                     break
 
-                # 如果是成功回合，则把整回合按序加入到 PPO 的 on-policy buffer，并立即 finish_path(last_value=0)
-                if success_flag1 == 1 and len(episode_buffer_shoulder) > 0:
-                    # shoulder
+                # 所有回合都参与学习（无论成功失败），但只在有数据时才存储
+                if len(episode_buffer_shoulder) > 0:
+                    # shoulder - 存储所有transition用于学习
                     for tr in episode_buffer_shoulder:
                         ppo_shoulder.store_transition_catch(
                             obs_img=tr['obs_img'],
@@ -473,7 +484,7 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
                         )
                     ppo_shoulder.finish_path(last_value=0.0)
 
-                    # arm
+                    # arm - 存储所有transition用于学习
                     for tr in episode_buffer_arm:
                         ppo_arm.store_transition_catch(
                             obs_img=tr['obs_img'],
@@ -486,21 +497,20 @@ def PPO_episoid_1(model_path=None, max_steps_per_episode=500):
                         )
                     ppo_arm.finish_path(last_value=0.0)
 
-                    episode_success = 1
+                    episode_success = 1 if success_flag1 == 1 else 0
                 else:
-                    # ❌ 非成功回合不能 finish_path
-                    # 因为没有存储 transition，会导致 GAE 报错
+                    # 没有有效数据，不参与学习
                     episode_success = 0
 
                 # 清空回合缓存（无论成功或失败）
                 episode_buffer_shoulder = []
                 episode_buffer_arm = []
 
-                # 触发训练逻辑：优化版 - 每个episode都参与学习，确保连续训练
+                # 触发训练逻辑：所有episode都学习，确保连续训练
                 episode_count_for_train += 1
 
-                # 每个episode都学习，但对成功episode有更高权重
-                should_learn = (episode_count_for_train >= 1)  # 每1个episode学习一次
+                # 每个episode都学习，确保连续梯度更新
+                should_learn = True  # 强制每个episode都学习
 
                 if should_learn:
                     # 执行学习，并获取损失信息（PPO.learn 返回 dict）

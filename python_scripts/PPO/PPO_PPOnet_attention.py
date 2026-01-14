@@ -170,6 +170,10 @@ class ActorCritic(nn.Module):
         self.log_std_min = -20
         self.log_std_max = 2
 
+        # 初始化 log_std_layer 为中等探索性（避免塌缩到0）
+        nn.init.constant_(self.log_std_layer.weight, 0.0)
+        nn.init.constant_(self.log_std_layer.bias, -1.0)  # 对应 sigma ≈ 0.37
+
     # --------------------------
     # Buffer utils
     # --------------------------

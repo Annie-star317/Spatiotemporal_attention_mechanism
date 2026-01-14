@@ -1,0 +1,35 @@
+{
+  "start_time": "2026-01-02 18:37:56",
+  "fixes_applied": [
+    "sigma_initialization: log_std bias initialized to -1.0 for better exploration",
+    "learning_logic: all episodes now participate in learning",
+    "reward_signals: increased success reward to 50.0, distance reward to 5.0",
+    "checkpoint_frequency: reduced from 500 to 100 episodes",
+    "exploration_bonus: added action variation rewards"
+  ],
+  "expected_improvements": [
+    "Higher success rates in checkpoints",
+    "Stable non-zero sigma values",
+    "More consistent loss values",
+    "Better learning convergence"
+  ],
+  "key_changes": {
+    "ppo_network": {
+      "log_std_initialization": "bias = -1.0 (sigma ≈ 0.37) prevents collapse to zero",
+      "weight_init": "constant 0.0 for log_std weights"
+    },
+    "training_logic": {
+      "episode_learning": "all episodes participate in learning, not just successful ones",
+      "learning_frequency": "every episode learns (should_learn = True)"
+    },
+    "reward_design": {
+      "success_reward": "increased from 15.0 to 50.0",
+      "distance_reward": "increased from 2.0 to 5.0",
+      "exploration_bonus": "action variation reward (0.1 * variation)"
+    },
+    "evaluation": {
+      "checkpoint_interval": "reduced from 500 to 100",
+      "test_episodes": "reduced from 100 to 20 for faster feedback"
+    }
+  }
+}
