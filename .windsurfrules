@@ -1,0 +1,22 @@
+这个项目是一个完整的深度强化学习系统，用于训练达尔文OP2机器人爬梯子。它结合了计算机视觉、深度强化学习和机器人控制等多个领域的技术，通过Webots仿真环境进行训练和测试。
+目前有两套算法（DQN和PPO还有SAC）
+训练流程如下 ：
+        输入：总回合数（episode）
+        1.环境初始化
+        2.for i in episode:
+        3.    while True: #第一梯级抓取训练
+        4.        a1=choice_action_1(obs1)
+        5.        next_obs1,reward1,done1,success_flag1=step1(obs1,a1)
+        6.        经验存入
+        7.        if done1 == 1: break
+        8.    if success_flag1 == 1:
+                    #以下调用DQN_episoid_2.py
+        9.        while True: #第一梯级踩踏训练
+        10.           a2=choice_action_2(obs2)
+        11.           next_obs2,reward2,done2,success_flag2=step2(obs2,a2)
+        12.           经验存入
+        13.           if done2 == 1: break
+        14.   else: continue
+
+user喜欢中文回答
+

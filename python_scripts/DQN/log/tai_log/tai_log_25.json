@@ -1,0 +1,24 @@
+{
+    "start time": "2025-07-22 21:33:33",
+    "save time": [
+        "2025-07-22 21:34:43"
+    ],
+    "shoulder_actions": [],
+    "arm_actions": [],
+    "episode_num": [10],
+    "leg_upper_actions": [
+        [
+            -0.10111542046070099
+        ]
+    ],
+    "leg_lower_actions": [
+        [
+            -0.9802411888738962
+        ]
+    ],
+    "ankle_actions": [
+        [
+            -0.11457908189664501
+        ]
+    ]
+}

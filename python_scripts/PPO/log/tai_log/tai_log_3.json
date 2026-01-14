@@ -1,0 +1,61 @@
+{
+    "start time": "2025-12-30 17:12:14",
+    "save time": [
+        "2025-12-30 17:12:18",
+        "2025-12-30 17:12:19",
+        "2025-12-30 17:12:21",
+        "2025-12-30 17:12:23"
+    ],
+    "episode_num": [0, 1, 2, 3],
+    "shoulder_actions": [
+        []
+    ],
+    "arm_actions": [
+        []
+    ],
+    "log_prob_list": [
+        []
+    ],
+    "value_list": [
+        []
+    ],
+    "LegUpper_actions": [
+        [1.0, -0.8458, -0.2338, -0.3964]
+    ],
+    "LegLower_actions": [
+        [0.2167, 0.032, 1.0, 0.5828]
+    ],
+    "Ankle_actions": [
+        [-0.108, 1.0, 1.0, -1.0]
+    ],
+    "log_prob_list_LegUpper": [
+        [-1.2822, -1.4132, -0.9895, -1.0619]
+    ],
+    "log_prob_list_LegLower": [
+        [-0.9198, -0.9285, -3.6054, -1.0022]
+    ],
+    "log_prob_list_Ankle": [
+        [-0.9448, -2.0598, -3.0655, -1.4493]
+    ],
+    "value_list_LegUpper": [
+        [0.0761, 0.0908, 0.0835, 0.0868]
+    ],
+    "value_list_LegLower": [
+        [-0.0272, -0.0168, -0.0185, -0.0176]
+    ],
+    "value_list_Ankle": [
+        [0.1757, 0.1736, 0.1784, 0.1834]
+    ],
+    "log_prob_list_shoulder": [
+        []
+    ],
+    "log_prob_list_arm": [
+        []
+    ],
+    "value_list_shoulder": [
+        []
+    ],
+    "value_list_arm": [
+        []
+    ]
+}
